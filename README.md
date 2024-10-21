@@ -38,8 +38,8 @@ Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-t
 
 #Usage
 -----
-*Run the application: python main.py
-*Interact with Iris through the UI or using voice commands
+* Run the application: python main.py
+* Interact with Iris through the UI or using voice commands
 
 #Technical Details
 -----------------
