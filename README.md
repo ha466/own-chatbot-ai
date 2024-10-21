@@ -36,12 +36,12 @@ Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-t
 * Set up Groq API key: change api key in api.py file 
 * Download required NLTK data
 
-#Usage
+# Usage
 -----
 * Run the application: python main.py
 * Interact with Iris through the UI or using voice commands
 
-#Technical Details
+# Technical Details
 -----------------
 * Groq API is used for primary AI functionality
 * NLTK's SentimentIntensityAnalyzer is used for sentiment analysis
@@ -49,9 +49,10 @@ Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-t
 * Spacy is used for advanced NLP capabilities
 * PyQt6 is used for the UI
 * PyAudio is used for voice output
-License
+  
+# License
 -------
-#This project is licensed under the MIT License.
+This project is licensed under the MIT License.
 Contributing
 ------------
 Contributions are welcome! Please submit a pull request or issue to this repository.
