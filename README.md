@@ -32,9 +32,9 @@ Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-t
 
 ### Clone Repository
 
-*git clone (https://github.com/ha466/own-chatbot-ai.git)
-*Set up Groq API key: change api key in api.py file 
-*Download required NLTK data
+* git clone (https://github.com/ha466/own-chatbot-ai.git)
+* Set up Groq API key: change api key in api.py file 
+* Download required NLTK data
 
 #Usage
 -----
