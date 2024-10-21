@@ -7,8 +7,8 @@ Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-t
 
 ## Features
 
-*   Speech-to-Text (STT) using 
-*   Text-to-Speech (TTS) using 
+*   Speech-to-Text (STT) using speech recognition 
+*   Text-to-Speech (TTS) using pyttsx3
 *   Sentiment analysis using NLTK's SentimentIntensityAnalyzer
 *   Sentence tokenization using NLTK
 *   Advanced text processing using spaCy
@@ -25,7 +25,8 @@ Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-t
 *   spaCy
 *   Groq API (register for a free API key)
 *   PyAudio (for microphone input)
-* 
+*   speechrecognition
+*   pyttsx3
 
 ## Installation
 
