@@ -2,7 +2,7 @@
 
 ## Overview
 
-Iris AI is an open-source AI assistant utilizing the Groq API FOR NLP , speech-to-text (STT) and text-to-speech (TTS) capabilities. Built with a simple PyQt6 UI, Iris AI combines the power of NLTK, spaCy, and Groq API 
+Iris AI is an open-source AI assistant utilizing the Groq API for NLP , speech-to-text (STT) and text-to-speech (TTS) capabilities. Built with a simple PyQt6 UI, Iris AI combines the power of NLTK, spaCy, and Groq API 
 
 
 ## Features
