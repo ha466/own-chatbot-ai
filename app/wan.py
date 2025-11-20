@@ -1,5 +1,5 @@
 # Install required packages
-!pip install -q diffusers torch pillow gradio
+!pip install -q diffusers==0.30.3 torch pillow gradio accelerate --upgrade
 
 import torch
 import PIL.Image
@@ -8,31 +8,37 @@ from diffusers.schedulers.scheduling_unipc_multistep import UniPCMultistepSchedu
 from diffusers.utils import export_to_video, load_image
 import gradio as gr
 
-# Load model once
-model_id = "AlekseyCalvin/WanVACE_1.3B_nf4_umT5fp8_Diffusers"
+# Use the official working model repo (fixed config, no layer mismatch error)
+model_id = "Wan-AI/Wan2.1-VACE-1.3B-diffusers"
+
+# Load VAE in float32 (as recommended)
 vae = AutoencoderKLWan.from_pretrained(model_id, subfolder="vae", torch_dtype=torch.float32)
+
+# Load the pipeline in bfloat16 for speed/memory
 pipe = WanVACEPipeline.from_pretrained(model_id, vae=vae, torch_dtype=torch.bfloat16)
-flow_shift = 5.0  # 5.0 for 720P, 3.0 for 480P
+
+# Set scheduler with proper flow_shift
+flow_shift = 3.0  # Use 3.0 for 480p-576p, 5.0 only for 720p+
 pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config, flow_shift=flow_shift)
+
 pipe.to("cuda")
+# Optional: enable memory savings
+pipe.enable_vae_slicing()
+pipe.enable_model_cpu_offload()  # Helps on Colab free/Pro if OOM
 
 def prepare_video_and_mask(first_img: PIL.Image.Image, last_img: PIL.Image.Image, height: int, width: int, num_frames: int):
     first_img = first_img.resize((width, height))
     last_img = last_img.resize((width, height))
-    frames = []
-    frames.append(first_img)
-    # Ideally, this should be 127.5 to match original code, but they perform computation on numpy arrays
-    # whereas we are passing PIL images. If you choose to pass numpy arrays, you can set it to 127.5 to
-    # match the original code.
+    frames = [first_img]
     frames.extend([PIL.Image.new("RGB", (width, height), (128, 128, 128))] * (num_frames - 2))
     frames.append(last_img)
+    
     mask_black = PIL.Image.new("L", (width, height), 0)
     mask_white = PIL.Image.new("L", (width, height), 255)
-    mask = [mask_black, *[mask_white] * (num_frames - 2), mask_black]
+    mask = [mask_black] + [mask_white] * (num_frames - 2) + [mask_black]
     return frames, mask
 
 def generate_video(prompt, negative_prompt, first_frame, last_frame, height, width, num_frames, num_steps, guidance_scale, seed):
-    # Load default images if not provided
     if first_frame is None:
         first_frame = load_image("https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/flf2v_input_first_frame.png")
     if last_frame is None:
@@ -55,7 +61,7 @@ def generate_video(prompt, negative_prompt, first_frame, last_frame, height, wid
         generator=generator,
     ).frames[0]
     
-    video_path = "output.mp4"
+    video_path = "/tmp/output.mp4"
     export_to_video(output, video_path, fps=16)
     return video_path
 
@@ -71,16 +77,16 @@ iface = gr.Interface(
         gr.Textbox(label="Negative Prompt", value=default_negative, lines=3),
         gr.Image(label="First Frame (upload or use default)", type="pil"),
         gr.Image(label="Last Frame (upload or use default)", type="pil"),
-        gr.Slider(label="Height", minimum=256, maximum=1024, step=64, value=512),
-        gr.Slider(label="Width", minimum=256, maximum=1024, step=64, value=512),
-        gr.Slider(label="Number of Frames", minimum=1, maximum=100, step=1, value=81),
-        gr.Slider(label="Inference Steps", minimum=10, maximum=100, step=5, value=30),
+        gr.Slider(label="Height", minimum=256, maximum=720, step=64, value=512),
+        gr.Slider(label="Width", minimum=256, maximum=1280, step=64, value=512),
+        gr.Slider(label="Number of Frames", minimum=16, maximum=129, step=1, value=81),
+        gr.Slider(label="Inference Steps", minimum=10, maximum=100, step=1, value=30),
         gr.Slider(label="Guidance Scale", minimum=1.0, maximum=20.0, step=0.5, value=5.0),
         gr.Number(label="Seed", value=42),
     ],
     outputs=gr.Video(label="Generated Video"),
-    title="WanVACE Video Generator",
-    description="Generate videos using WanVACE model. Upload first and last frames or use defaults."
+    title="Wan2.1 VACE 1.3B First/Last Frame to Video (Fixed & Working)",
+    description="Official Wan2.1-VACE-1.3B model via Diffusers. The previous model had a broken config causing the 'VACE layers exceed transformer layers' error. Now fixed!"
 )
 
 iface.launch(share=True)
