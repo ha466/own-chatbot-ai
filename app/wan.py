@@ -8,23 +8,20 @@ from diffusers.schedulers.scheduling_unipc_multistep import UniPCMultistepSchedu
 from diffusers.utils import export_to_video, load_image
 import gradio as gr
 
-# Use the official working model repo (fixed config, no layer mismatch error)
 model_id = "Wan-AI/Wan2.1-VACE-1.3B-diffusers"
 
-# Load VAE in float32 (as recommended)
 vae = AutoencoderKLWan.from_pretrained(model_id, subfolder="vae", torch_dtype=torch.float32)
 
-# Load the pipeline in bfloat16 for speed/memory
+
 pipe = WanVACEPipeline.from_pretrained(model_id, vae=vae, torch_dtype=torch.bfloat16)
 
-# Set scheduler with proper flow_shift
 flow_shift = 3.0  # Use 3.0 for 480p-576p, 5.0 only for 720p+
 pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config, flow_shift=flow_shift)
 
 pipe.to("cuda")
-# Optional: enable memory savings
+
 pipe.enable_vae_slicing()
-pipe.enable_model_cpu_offload()  # Helps on Colab free/Pro if OOM
+pipe.enable_model_cpu_offload()
 
 def prepare_video_and_mask(first_img: PIL.Image.Image, last_img: PIL.Image.Image, height: int, width: int, num_frames: int):
     first_img = first_img.resize((width, height))
@@ -65,11 +62,10 @@ def generate_video(prompt, negative_prompt, first_frame, last_frame, height, wid
     export_to_video(output, video_path, fps=16)
     return video_path
 
-# Default values
+
 default_prompt = "CG animation style, a small blue bird takes off from the ground, flapping its wings. The bird's feathers are delicate, with a unique pattern on its chest. The background shows a blue sky with white clouds under bright sunshine. The camera follows the bird upward, capturing its flight and the vastness of the sky from a close-up, low-angle perspective."
 default_negative = "Bright tones, overexposed, static, blurred details, subtitles, style, works, paintings, images, static, overall gray, worst quality, low quality, JPEG compression residue, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn faces, deformed, disfigured, misshapen limbs, fused fingers, still picture, messy background, three legs, many people in the background, walking backwards"
 
-# Gradio UI
 iface = gr.Interface(
     fn=generate_video,
     inputs=[
